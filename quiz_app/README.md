@@ -12,10 +12,3 @@
 * **Backend:** Python, Django
 * **Frontend:** HTML5, CSS3, JavaScript, Bootstrap 5
 * **Database:** SQLite
-
-## 🔧 Локальний запуск
-
-1. Клонуйте репозиторій:
-   ```bash
-   git clone [https://github.com/your-username/quiz_app.git](https://github.com/your-username/quiz_app.git)
-   cd quiz_app
