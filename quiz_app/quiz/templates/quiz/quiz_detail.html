@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ category.name }} — Проходження</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background: #0f172a;
+            color: #f8fafc;
+            min-height: 100vh;
+        }
+        .sticky-top-bar {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .question-card {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+        }
+        .form-check-card {
+            display: block;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 14px 18px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .form-check-card:hover {
+            background: rgba(99, 102, 241, 0.1);
+            border-color: #6366f1;
+        }
+        .form-check-input:checked + .form-check-card {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: #818cf8;
+            box-shadow: 0 0 0 1px #818cf8;
+        }
+        .form-check-input {
+            display: none;
+        }
+        .btn-gradient {
+            background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
+            border: none;
+            color: #fff;
+            border-radius: 12px;
+            font-weight: 600;
+            padding: 14px;
+        }
+        .btn-gradient:hover {
+            opacity: 0.9;
+            color: #fff;
+        }
+        .progress {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        .progress-bar {
+            background: linear-gradient(90deg, #6366f1, #a855f7);
+        }
+    </style>
+</head>
+<body>
+
+<div class="sticky-top-bar py-3 mb-4">
+    <div class="container" style="max-width: 800px;">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 class="m-0 text-white"><i class="bi bi-bookmark-star text-warning me-2"></i>{{ category.name }}</h5>
+            <div class="fs-5 fw-bold text-danger bg-danger bg-opacity-10 px-3 py-1 rounded-pill border border-danger border-opacity-25">
+                <i class="bi bi-clock me-1"></i> <span id="timer">01:00</span>
+            </div>
+        </div>
+        <div class="progress">
+            <div id="progress-bar" class="progress-bar" role="progressbar" style="width: 0%;"></div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-2" style="max-width: 800px;">
+    <form id="quiz-form" method="post">
+        {% csrf_token %}
+        {% for question in questions %}
+            <div class="card question-card mb-4 p-4 shadow-lg">
+                <h5 class="fw-bold mb-3 text-white">
+                    <span class="text-primary me-2">#{{ forloop.counter }}</span> {{ question.text }}
+                </h5>
+
+                <!-- Блок з зображенням (якщо воно є) -->
+                {% if question.image %}
+                    <div class="mb-4 text-center">
+                        <img src="{{ question.image.url }}" alt="Зображення до питання" class="img-fluid rounded-3 border border-secondary border-opacity-25 shadow-sm" style="max-height: 350px; object-fit: contain;">
+                    </div>
+                {% endif %}
+
+                <div class="d-flex flex-column gap-3">
+                    {% for answer in question.answers.all %}
+                        <div>
+                            <input class="form-check-input answer-radio" type="radio" 
+                                name="question_{{ question.id }}" 
+                                id="answer_{{ answer.id }}" 
+                                value="{{ answer.id }}">
+                            <label class="form-check-card" for="answer_{{ answer.id }}">
+                                <span class="text-light fs-6">{{ answer.text }}</span>
+                            </label>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+
+        <button type="submit" class="btn btn-gradient w-100 fs-5 mb-5 shadow">
+            Завершити тест <i class="bi bi-check-circle ms-2"></i>
+        </button>
+    </form>
+</div>
+
+<script>
+    const totalQuestions = {{ questions.count }};
+    const radios = document.querySelectorAll('.answer-radio');
+    const progressBar = document.getElementById('progress-bar');
+
+    radios.forEach(radio => {
+        radio.addEventListener('change', () => {
+            const answeredQuestions = new Set(
+                Array.from(document.querySelectorAll('.answer-radio:checked')).map(r => r.name)
+            ).size;
+            const percent = (answeredQuestions / totalQuestions) * 100;
+            progressBar.style.width = percent + '%';
+        });
+    });
+
+    let timeLeft = 60; 
+    const timerElement = document.getElementById('timer');
+    const quizForm = document.getElementById('quiz-form');
+
+    const countdown = setInterval(() => {
+        let minutes = Math.floor(timeLeft / 60);
+        let seconds = timeLeft % 60;
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+        seconds = seconds < 10 ? '0' + seconds : seconds;
+        timerElement.textContent = `${minutes}:${seconds}`;
+
+        if (timeLeft <= 0) {
+            clearInterval(countdown);
+            alert('Час вийшов!');
+            quizForm.submit();
+        }
+        timeLeft--;
+    }, 1000);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,54 @@
+{% extends 'quiz/base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7 col-lg-6">
+        <div class="card card-custom p-4 p-md-5 shadow-lg">
+            <div class="text-center mb-4">
+                <div class="p-3 rounded-circle bg-primary bg-opacity-10 text-primary d-inline-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px;">
+                    <i class="bi bi-plus-circle-fill fs-2"></i>
+                </div>
+                <h2 class="fw-bold text-gradient">Створити нову вікторину</h2>
+                <p class="text-secondary small">Заповніть основну інформацію про категорію</p>
+            </div>
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-3">
+                    {{ form.as_p }}
+                </div>
+                <button type="submit" class="btn btn-gradient w-100 py-2 fs-6">Далі: додати питання <i class="bi bi-arrow-right ms-1"></i></button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Стилізація полів форми для єдиного вигляду -->
+<style>
+    form p {
+        margin-bottom: 1.25rem;
+    }
+    form label {
+        display: block;
+        margin-bottom: 0.4rem;
+        color: #cbd5e1;
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+    form input, form textarea, form select {
+        width: 100%;
+        padding: 0.65rem 0.9rem;
+        background-color: #1e293b;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 10px;
+        color: #f8fafc;
+    }
+    form input:focus, form textarea:focus, form select:focus {
+        border-color: #6366f1;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+    }
+    form input[type="file"] {
+        padding: 0.45rem;
+    }
+</style>
+{% endblock %}

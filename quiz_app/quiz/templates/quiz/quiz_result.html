@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Результат — {{ category.name }}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background: #0f172a;
+            color: #f8fafc;
+            min-height: 100vh;
+        }
+        .navbar {
+            background: rgba(15, 23, 42, 0.8) !important;
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+        .text-gradient {
+            background: linear-gradient(135deg, #818cf8 0%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+    <div class="container">
+        <a class="navbar-brand fw-bold fs-4 text-gradient" href="{% url 'quiz:category_list' %}">
+            <i class="bi bi-controller me-2"></i>QuizApp
+        </a>
+        <div class="navbar-nav ms-auto align-items-center">
+            <a class="nav-link me-3" href="{% url 'quiz:category_list' %}">Категорії</a>
+            {% if user.is_authenticated %}
+                <a class="nav-link me-3" href="{% url 'quiz:profile' %}">Мій профіль</a>
+                <a class="btn btn-outline-light btn-sm rounded-pill px-3" href="{% url 'quiz:logout' %}">Вийти</a>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+<div class="container py-5" style="max-width: 800px;">
+    <!-- Головна картка балів -->
+    <div class="glass-card p-5 text-center mb-4 shadow-lg">
+        <div class="mb-3">
+            <i class="bi bi-trophy-fill display-1 text-warning"></i>
+        </div>
+        <h2 class="fw-bold mb-2">Вітаємо!</h2>
+        <p class="text-secondary fs-5">Ви успішно завершили тест з категорії <strong class="text-white">{{ category.name }}</strong></p>
+
+        <div class="my-4 p-4 rounded-4 bg-dark bg-opacity-50 d-inline-block border border-secondary border-opacity-25 px-5">
+            <h1 class="display-3 fw-bold text-gradient m-0">{{ score }} / {{ total }}</h1>
+            <span class="text-secondary small">правильних відповідей</span>
+        </div>
+
+        <div class="mt-4 d-flex justify-content-center gap-3">
+            <a href="{% url 'quiz:category_list' %}" class="btn btn-outline-light rounded-pill px-4">
+                <i class="bi bi-house me-1"></i> На головну
+            </a>
+            <a href="{% url 'quiz:quiz_detail' category.id %}" class="btn btn-primary rounded-pill px-4">
+                <i class="bi bi-arrow-counterclockwise me-1"></i> Ще раз
+            </a>
+        </div>
+    </div>
+
+    <!-- Блок оцінювання тесту -->
+    <div class="glass-card p-4 text-center mb-5 shadow-lg">
+        <h5 class="fw-bold mb-3"><i class="bi bi-star-fill text-warning me-2"></i>Оцініть цей тест</h5>
+        <form action="{% url 'quiz:rate_quiz' category.id %}" method="post" class="d-flex justify-content-center gap-2">
+            {% csrf_token %}
+            {% for i in "12345" %}
+                <button type="submit" name="stars" value="{{ forloop.counter }}" 
+                        class="btn btn-outline-warning btn-sm px-3 rounded-pill {% if user_rating == forloop.counter %}active{% endif %}">
+                    ★ {{ forloop.counter }}
+                </button>
+            {% endfor %}
+        </form>
+        {% if user_rating %}
+            <small class="text-success d-block mt-2"><i class="bi bi-check-circle me-1"></i>Ваша поточна оцінка: {{ user_rating }} ★</small>
+        {% endif %}
+    </div>
+
+    <!-- Аналіз відповідей -->
+    <h4 class="fw-bold mb-4 text-center">Аналіз відповідей</h4>
+    {% for item in detailed_results %}
+        <div class="glass-card mb-3 p-4 border-start border-4 {% if item.is_correct %}border-success{% else %}border-danger{% endif %} shadow-sm">
+            <h6 class="fw-bold text-white mb-3">
+                <i class="bi {% if item.is_correct %}bi-check-circle-fill text-success{% else %}bi-x-circle-fill text-danger{% endif %} me-2"></i>
+                Питання {{ forloop.counter }}: {{ item.question.text }}
+            </h6>
+            
+            {% if item.question.image %}
+                <div class="mb-3 ps-4">
+                    <img src="{{ item.question.image.url }}" alt="Зображення до питання" class="img-fluid rounded-3 border border-secondary border-opacity-25" style="max-height: 220px;">
+                </div>
+            {% endif %}
+
+            <div class="ps-4">
+                <p class="mb-1 text-secondary">
+                    Ваша відповідь: 
+                    {% if item.user_answer %}
+                        <span class="fw-bold {% if item.is_correct %}text-success{% else %}text-danger{% endif %}">
+                            {{ item.user_answer.text }}
+                        </span>
+                    {% else %}
+                        <span class="text-warning fst-italic">Час вийшов / відповідь відсутня</span>
+                    {% endif %}
+                </p>
+
+                {% if not item.is_correct %}
+                    <p class="mb-0 text-success">
+                        Правильна відповідь: <strong>{{ item.correct_answer.text }}</strong>
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+</body>
+</html>

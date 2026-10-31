@@ -1,0 +1,105 @@
+{% extends 'quiz/base.html' %}
+{% block content %}
+<div class="row g-4">
+    <!-- Ліва колонка: Профіль та форма редагування -->
+    <div class="col-lg-4">
+        <div class="card card-custom p-4 shadow-lg text-center">
+            <div class="mb-3">
+                {% if profile.avatar and profile.avatar.url %}
+                    <img src="{{ profile.avatar.url }}" alt="Аватар" class="rounded-circle border border-primary border-3" style="width: 120px; height: 120px; object-fit: cover;">
+                {% else %}
+                    <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center mx-auto" style="width: 120px; height: 120px;">
+                        <i class="bi bi-person-fill fs-1"></i>
+                    </div>
+                {% endif %}
+            </div>
+            <h3 class="fw-bold text-white mb-1">{{ user.username }}</h3>
+            <p class="text-secondary small mb-3">{{ user.email|default:"Ел. пошта не вказана" }}</p>
+            {% if profile.bio %}
+                <p class="text-secondary small fst-italic bg-dark bg-opacity-50 p-2 rounded-3">{{ profile.bio }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Форма редагування профілю -->
+        <div class="card card-custom p-4 shadow-lg mt-4">
+            <h5 class="fw-bold text-white mb-3"><i class="bi bi-gear-fill me-2"></i>Налаштування профілю</h5>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-3 text-start">
+                    <label class="form-label text-secondary small">Дані користувача:</label>
+                    {{ u_form.as_p }}
+                </div>
+                <div class="mb-3 text-start">
+                    <label class="form-label text-secondary small">Інформація профілю:</label>
+                    {{ p_form.as_p }}
+                </div>
+                <button type="submit" class="btn btn-gradient w-100">Зберегти зміни</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Права колонка: Історія результатів тестів -->
+    <div class="col-lg-8">
+        <div class="card card-custom p-4 shadow-lg">
+            <h4 class="fw-bold text-white mb-4"><i class="bi bi-journal-check me-2"></i>Історія проходження тестів</h4>
+            <div class="table-responsive">
+                <table class="table table-dark table-hover align-middle mb-0" style="background: transparent;">
+                    <thead>
+                        <tr class="text-secondary border-bottom border-secondary border-opacity-25">
+                            <th>Вікторина</th>
+                            <th>Результат</th>
+                            <th>Дата</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for result in results %}
+                            <tr>
+                                <td class="fw-semibold text-white">{{ result.category.name }}</td>
+                                <td>
+                                    <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 px-3 py-2 rounded-pill">
+                                        {{ result.score }} / {{ result.total_questions }}
+                                    </span>
+                                </td>
+                                <td class="text-secondary small">{{ result.created_at|date:"d.m.Y H:i" }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center text-secondary py-4">
+                                    <i class="bi bi-clock-history fs-3 d-block mb-2"></i>
+                                    Ви ще не пройшли жодного тесту.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Стиль для красивого відображення полів стандартних форм Django всередині Bootstrap -->
+<style>
+    form p {
+        margin-bottom: 1rem;
+    }
+    form label {
+        display: block;
+        margin-bottom: 0.3rem;
+        color: #94a3b8;
+        font-size: 0.875rem;
+    }
+    form input, form textarea, form select {
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        background-color: #1e293b;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 8px;
+        color: #f8fafc;
+    }
+    form input:focus, form textarea:focus, form select:focus {
+        border-color: #6366f1;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+    }
+</style>
+{% endblock %}
